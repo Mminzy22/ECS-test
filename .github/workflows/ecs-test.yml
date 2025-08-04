@@ -42,9 +42,11 @@ jobs:
         run: |
           IMAGE_URI=${{ secrets.IMAGE_URI }}
           IMAGE_NAME=${{ secrets.IMAGE_NAME }}
+          IMAGE_TAG=${{ secrets.IMAGE_TAG }}
           CONTAINER_NAME=${{ secrets.CONTAINER_NAME }}
 
           docker build -t $IMAGE_NAME .
+          docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_URI
           docker push $IMAGE_URI
 
           mkdir -p build/deploy
