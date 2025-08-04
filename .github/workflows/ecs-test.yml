@@ -44,7 +44,7 @@ jobs:
           IMAGE_NAME=${{ secrets.IMAGE_NAME }}
           CONTAINER_NAME=${{ secrets.CONTAINER_NAME }}
 
-          docker build -t IMAGE_NAME .
+          docker build -t $IMAGE_NAME .
           docker push $IMAGE_URI
 
           mkdir -p build/deploy
