@@ -55,70 +55,66 @@ jobs:
       - name: Generate ECS Task Definition file
         run: |
           mkdir -p build/deploy
-          cat <<EOF > build/deploy/task-definition.json
-          {
-            "family": "${{ secrets.TASK_FAMILY }}",
-            "networkMode": "awsvpc",
-            "requiresCompatibilities": ["FARGATE"],
-            "cpu": "256",
-            "memory": "512",
-            "executionRoleArn": "${{ secrets.EXECUTION_ROLE_ARN }}",
-            "containerDefinitions": [
-              {
-                "name": "${{ secrets.CONTAINER_NAME }}",
-                "image": "${{ env.IMAGE_URI }}",
-                "portMappings": [
-                  {
-                    "containerPort": 8080,
-                    "hostPort": 8080,
-                    "protocol": "tcp"
-                  }
-                ],
-                "essential": true,
-                "logConfiguration": {
-                  "logDriver": "awslogs",
-                  "options": {
-                    "awslogs-group": "/ecs/${{ secrets.TASK_FAMILY }}",
-                    "awslogs-region": "ap-northeast-2",
-                    "awslogs-stream-prefix": "ecs"
-                  }
-                }
-              }
-            ]
-          }
-  EOF
+          echo '{' > build/deploy/task-definition.json
+          echo '  "family": "${{ secrets.TASK_FAMILY }}",' >> build/deploy/task-definition.json
+          echo '  "networkMode": "awsvpc",' >> build/deploy/task-definition.json
+          echo '  "requiresCompatibilities": ["FARGATE"],' >> build/deploy/task-definition.json
+          echo '  "cpu": "256",' >> build/deploy/task-definition.json
+          echo '  "memory": "512",' >> build/deploy/task-definition.json
+          echo '  "executionRoleArn": "${{ secrets.EXECUTION_ROLE_ARN }}",' >> build/deploy/task-definition.json
+          echo '  "containerDefinitions": [' >> build/deploy/task-definition.json
+          echo '    {' >> build/deploy/task-definition.json
+          echo '      "name": "${{ secrets.CONTAINER_NAME }}",' >> build/deploy/task-definition.json
+          echo '      "image": "${{ env.IMAGE_URI }}",' >> build/deploy/task-definition.json
+          echo '      "portMappings": [{' >> build/deploy/task-definition.json
+          echo '        "containerPort": 8080,' >> build/deploy/task-definition.json
+          echo '        "hostPort": 8080,' >> build/deploy/task-definition.json
+          echo '        "protocol": "tcp"' >> build/deploy/task-definition.json
+          echo '      }],' >> build/deploy/task-definition.json
+          echo '      "essential": true,' >> build/deploy/task-definition.json
+          echo '      "logConfiguration": {' >> build/deploy/task-definition.json
+          echo '        "logDriver": "awslogs",' >> build/deploy/task-definition.json
+          echo '        "options": {' >> build/deploy/task-definition.json
+          echo '          "awslogs-group": "/ecs/${{ secrets.TASK_FAMILY }}",' >> build/deploy/task-definition.json
+          echo '          "awslogs-region": "ap-northeast-2",' >> build/deploy/task-definition.json
+          echo '          "awslogs-stream-prefix": "ecs"' >> build/deploy/task-definition.json
+          echo '        }' >> build/deploy/task-definition.json
+          echo '      }' >> build/deploy/task-definition.json
+          echo '    }' >> build/deploy/task-definition.json
+          echo '  ]' >> build/deploy/task-definition.json
+          echo '}' >> build/deploy/task-definition.json
 
-- name: Upload task-definition.json
-  uses: actions/upload-artifact@v4
-  with:
-    name: task-def
-    path: build/deploy/task-definition.json
+      - name: Upload task-definition.json
+        uses: actions/upload-artifact@v4
+        with:
+          name: task-def
+          path: build/deploy/task-definition.json
 
-deploy:
-  name: Deploy to Amazon ECS
-  runs-on: ubuntu-latest
-  needs: build
+  deploy:
+    name: Deploy to Amazon ECS
+    runs-on: ubuntu-latest
+    needs: build
 
-  steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ap-northeast-2
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
 
-    - name: Download task definition
-      uses: actions/download-artifact@v4
-      with:
-        name: task-def
-        path: build/deploy
+      - name: Download task definition
+        uses: actions/download-artifact@v4
+        with:
+          name: task-def
+          path: build/deploy
 
-    - name: Deploy to Amazon ECS
-      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-      with:
-        cluster: ${{ secrets.ECS_CLUSTER }}
-        service: ${{ secrets.ECS_SERVICE }}
-        task-definition: build/deploy/task-definition.json
+      - name: Deploy to Amazon ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          cluster: ${{ secrets.ECS_CLUSTER }}
+          service: ${{ secrets.ECS_SERVICE }}
+          task-definition: build/deploy/task-definition.json
