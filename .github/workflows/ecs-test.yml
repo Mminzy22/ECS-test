@@ -10,7 +10,7 @@ env:
   ECR_REPOSITORY: 077672914621.dkr.ecr.ap-northeast-2.amazonaws.com
   ECS_SERVICE: minji-task-service
   ECS_CLUSTER: next-team4-ecs-cluster
-  ECS_TASK_DEFINITION: minji-task
+  ECS_TASK_DEFINITION: ./task-definition.json
   CONTAINER_NAME: minji-ecr
 
 jobs:
